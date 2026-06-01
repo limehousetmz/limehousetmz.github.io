@@ -103,11 +103,13 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    position: relative;
   }
   .cell .zip { font-size: 10.5pt; letter-spacing: 0.06em; margin-bottom: 1mm; }
   .cell .addr { font-size: 10pt; line-height: 1.35; margin-bottom: 6mm; }
   .cell .name { font-size: 13pt; font-weight: 700; text-align: center; }
   .cell .name .sama { font-size: 11pt; font-weight: 400; margin-left: 0.5em; }
+  .cell .pid { position: absolute; right: 2mm; bottom: 1.5mm; font-size: 5pt; color: #aaa; }
   .cell.empty { }
 
   /* ガイド枠（画面確認用・印刷では消す） */
@@ -136,9 +138,10 @@
 
   <div class="steps">
     <b>使い方</b><br>
-    ① スプレッドシート（感謝祭DM対象 または 点検ハガキ対象）で、<b>郵便番号・住所・お客様名の3列</b>を見出しの下から選んでコピー（⌘C）<br>
+    ① スプレッドシート（感謝祭DM対象 / 通常DM対象 / 点検ハガキ対象）で、<b>郵便番号・住所・お客様名の3列</b>を見出しの下から選んでコピー（⌘C）<br>
     ② 下の欄に貼り付け（⌘V）<br>
-    ③「ラベルを作成」を押す → 並びを確認 →「印刷する」
+    ③「ラベルを作成」を押す → 並びを確認 →「印刷する」<br>
+    <span style="color:#999;">※ 4列目に物件IDを足してコピーすると、各ラベルの右下に小さくID番号が入ります（発送照合用）。</span>
   </div>
 
   <div class="field">
@@ -188,12 +191,28 @@
       const t = line.replace(/\r$/, '');
       if (!t.trim()) return;
       // タブ区切り優先、なければ連続スペース/全角スペースで分割
-      let parts = t.includes('\t') ? t.split('\t') : t.split(/[\s　]{1,}/);
-      parts = parts.map(p => p.trim()).filter(p => p !== '');
-      if (parts.length >= 3) {
-        rows.push({ zip: parts[0], addr: parts[1], name: parts.slice(2).join(' ') });
-      } else if (parts.length === 2) {
-        rows.push({ zip: parts[0], addr: parts[1], name: '' });
+      let parts;
+      if (t.includes('\t')) {
+        // タブ区切り（スプレッドシートからのコピー）: 列がはっきり分かれる
+        parts = t.split('\t').map(p => p.trim());
+        const zip = parts[0] || '';
+        const addr = parts[1] || '';
+        const name = parts[2] || '';
+        const pid = parts[3] || '';
+        if (zip || addr || name) rows.push({ zip, addr, name, pid });
+      } else {
+        // スペース区切り: 末尾が数字だけなら物件IDとみなす
+        parts = t.split(/[\s　]{1,}/).map(p => p.trim()).filter(p => p !== '');
+        if (parts.length >= 3) {
+          let pid = '';
+          // 末尾が純粋な数字なら物件ID
+          if (parts.length >= 4 && /^\d+$/.test(parts[parts.length - 1])) {
+            pid = parts.pop();
+          }
+          rows.push({ zip: parts[0], addr: parts[1], name: parts.slice(2).join(' '), pid });
+        } else if (parts.length === 2) {
+          rows.push({ zip: parts[0], addr: parts[1], name: '', pid: '' });
+        }
       }
     });
     return rows;
@@ -233,6 +252,7 @@
           + (zip ? '<div class="zip">' + esc(zip) + '</div>' : '')
           + (c.addr ? '<div class="addr">' + esc(c.addr) + '</div>' : '')
           + (name ? '<div class="name">' + name + '</div>' : '')
+          + (c.pid ? '<div class="pid">' + esc(c.pid) + '</div>' : '')
           + '</div>';
       });
       html += '</div>';
