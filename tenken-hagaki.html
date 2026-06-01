@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>点検案内ハガキ 裏面</title>
+<style>
+  :root {
+    --ink: #2a2a2a;
+    --accent: #6b8e5a;
+    --paper: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "MS Mincho", serif;
+    background: #e8e6e0;
+    color: var(--ink);
+    padding: 20px;
+    line-height: 1.6;
+  }
+
+  /* ===== 操作パネル（印刷されない） ===== */
+  .panel {
+    max-width: 900px;
+    margin: 0 auto 24px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .panel h1 {
+    font-size: 20px;
+    color: var(--accent);
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+  .panel .sub { font-size: 13px; color: #888; margin-bottom: 20px; }
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #555;
+  }
+  .field input, .field textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid #d5d2c8;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .field textarea { resize: vertical; min-height: 44px; }
+  .counts {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .counts .cnt label { font-size: 12px; }
+  .counts .cnt input { text-align: center; font-size: 18px; font-weight: 700; }
+  .btnrow { display: flex; gap: 12px; margin-top: 20px; }
+  button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-print { background: var(--accent); color: #fff; }
+  .btn-print:hover { background: #5a7a4a; }
+  .btn-refresh { background: #f0eee8; color: #555; }
+  .note {
+    font-size: 12px;
+    color: #999;
+    margin-top: 14px;
+    line-height: 1.7;
+  }
+
+  /* ===== ハガキ本体 ===== */
+  #sheets { max-width: 900px; margin: 0 auto; }
+  .hagaki {
+    width: 100mm;
+    height: 148mm;
+    background: var(--paper);
+    margin: 0 auto 20px;
+    padding: 6mm 7mm;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .title {
+    font-size: 15pt;
+    font-weight: 700;
+    text-align: center;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    padding-bottom: 2.5mm;
+    border-bottom: 1.2px solid var(--accent);
+    margin-bottom: 2.5mm;
+  }
+  .greet { font-size: 8.5pt; line-height: 1.55; margin-bottom: 2mm; }
+  .qr-row {
+    display: flex;
+    align-items: center;
+    gap: 2.5mm;
+    margin: 0 0 2mm;
+    padding: 2mm;
+    background: #f7f6f2;
+    border-radius: 1.5mm;
+  }
+  .qr-row img { width: 18mm; height: 18mm; flex-shrink: 0; }
+  .qr-row .qr-cap { font-size: 7.5pt; line-height: 1.4; flex: 1; }
+  .qr-row .qr-url { font-size: 6.5pt; color: #777; word-break: break-all; }
+  .notice { font-size: 7.5pt; line-height: 1.5; margin-bottom: 1.5mm; }
+  .schedule {
+    border: 1px dashed #b5b0a2;
+    border-radius: 1.5mm;
+    padding: 2mm 2.5mm;
+    font-size: 8pt;
+    line-height: 1.55;
+    margin-bottom: 1.5mm;
+    white-space: pre-line;
+  }
+  .req { font-size: 8.5pt; font-weight: 700; text-align: center; margin-bottom: 1mm; }
+  .req-note {
+    font-size: 7.5pt;
+    line-height: 1.5;
+    text-align: left;
+    margin: 0 -3mm 1.5mm;
+    color: #555;
+    position: relative;
+    padding: 0 8mm;
+  }
+  .req-note::before, .req-note::after {
+    position: absolute;
+    top: 50%;
+    font-size: 28pt;
+    color: #999;
+    line-height: 1;
+  }
+  .req-note::before { content: "（"; left: 0; transform: translateY(-50%) scaleX(0.45) scaleY(1.4); }
+  .req-note::after { content: "）"; right: 0; transform: translateY(-50%) scaleX(0.45) scaleY(1.4); }
+  .closing { font-size: 8.5pt; text-align: center; margin-bottom: 1.5mm; }
+  .company {
+    margin-top: auto;
+    border-top: 1px solid #ddd;
+    padding-top: 2mm;
+    font-size: 7pt;
+    line-height: 1.5;
+  }
+  .company .cname { font-size: 8.5pt; font-weight: 700; color: var(--accent); }
+  .company .tel-big { font-size: 9.5pt; font-weight: 700; }
+  .company .hours { font-size: 7.5pt; font-weight: 700; }
+
+  /* ===== 印刷設定 ===== */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .panel { display: none; }
+    #sheets { max-width: none; margin: 0; }
+    .hagaki {
+      box-shadow: none;
+      margin: 0;
+      page-break-after: always;
+      border: none;
+    }
+    .hagaki:last-child { page-break-after: auto; }
+    @page { size: 100mm 148mm; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="panel">
+  <h1>点検案内ハガキ 裏面（本文）</h1>
+  <div class="sub">点検種別ごとの枚数・見学会日程・定休日を入力して、印刷ボタンを押してください。</div>
+
+  <div class="field">
+    <label>点検種別ごとの枚数</label>
+    <div class="counts">
+      <div class="cnt"><label>1年点検</label><input type="number" id="c1" value="0" min="0"></div>
+      <div class="cnt"><label>2年点検</label><input type="number" id="c2" value="1" min="0"></div>
+      <div class="cnt"><label>5年点検</label><input type="number" id="c5" value="3" min="0"></div>
+      <div class="cnt"><label>10年点検</label><input type="number" id="c10" value="3" min="0"></div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>点検予約のお願い（〇月の部分）</label>
+    <input type="text" id="reqMonth" value="６月">
+  </div>
+
+  <div class="field">
+    <label>定休日</label>
+    <input type="text" id="holiday" value="毎週水曜日・木曜日">
+  </div>
+
+  <div class="field">
+    <label>見学会・イベント日程（改行で複数行OK）</label>
+    <textarea id="event">会社イベント　６月６日(土)７日(日) １３日(土)１４日(日)</textarea>
+  </div>
+
+  <div class="btnrow">
+    <button class="btn-refresh" onclick="render()">プレビュー更新</button>
+    <button class="btn-print" onclick="window.print()">印刷する</button>
+  </div>
+
+  <div class="note">
+    ※ 印刷設定：用紙サイズ「ハガキ(100×148mm)」、余白「なし」、倍率「100%（標準）」にしてください。<br>
+    ※ プリンターにハガキをセットし、裏面（本文側）が印刷される向きで入れてください。<br>
+    ※ 同じ点検種別の人には同じ裏面を使えます。枚数だけ指定すればOKです。
+  </div>
+</div>
+
+<div id="sheets"></div>
+
+<script>
+  const QR = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUoAAAFKAQAAAABTUiuoAAACcUlEQVR4nO2bQWocMRBFX1mCLNWQA+Qo3TfImXKk3KD7KD5AQFoa1PwsJLXHmzAJTEbg0sK4rbf4UFTpV0k2cec6Xu4lwVFHHX2BYn1txQxKBDjNNmBsxUm0OkqQJAmSxPGt0kJ2WIRVkpSn0eoo9OwBoJhxLKB9fNr2cAGO3rXi7UdZECljEKqR8n8Q4Og/o0Gs+TTWDNJr/AP6GAGO/nG1gAwbf1r77fhWMVIFkoDyOAGO/iV6Nt8HBNlWvoj1NdJ+HGZmtkyj9XOjsWcPAOW07gnTm+lYAre989O1OoqUg6QcND7Hzpo/IPvTtTr6AunNzJbTpAy2tfarHVktgl4JJ0JLBJJkW+pF0GwJghLRTvDueBqUNsfYR0ZJ+WqMU23lsO16JXw+2qOlDKyqaE+VFrf92t2TPFozoFcyhR6UFrdMGxEOq+G5NQUaIdVopF/Gms8oCBVKqAZnFAVYf36dQaujjCLYCx5rDmJVhTaIuk41z63no70SSvWmwYJ0+Y3k59Y86Gh96ZFhzf2666Zj9tyaBG2urzmKZtmvxni9Qrb6LGMutES0l0i7iFQ+DQDbUkU/lscLcPSedXNukUaXtY9zayCeW1OgozseLXKPUeqe8H3m69GaA31/89T+FJplB8C28fppDq2fHI20dhgwktqNsa2vho4NRAmVYwkzaHW0of3NUxu6d4NBu1ReTus+cRKtnxn98FAmvZkoX8SxhGprXtDxPQPla51Aq6OMJviaNzWDce2OGZS7jGnQERT6hVYfxAfZ1qrjowU4eteK8H5QlQUdBrb+BB0LpmMJlfYO9OlaHTX/jyBHHX0I+hvqPqqp+XhLrAAAAABJRU5ErkJggg==";
+
+  function toZenkaku(n) {
+    return String(n).replace(/[0-9]/g, c => String.fromCharCode(c.charCodeAt(0) + 0xFEE0));
+  }
+
+  function makeHagaki(years) {
+    years = toZenkaku(years);
+    const reqMonth = document.getElementById('reqMonth').value;
+    const holiday = document.getElementById('holiday').value;
+    const event = document.getElementById('event').value;
+    return `
+    <div class="hagaki">
+      <div class="title">定期点検のご案内</div>
+      <div class="greet">いつもありがとうございます。<br>
+      お引渡しをして${years}年点検の時期となりました。点検希望日時をTel又はHPにてご連絡下さい。ご希望の日程のご連絡を頂いてから、営業日に日程調整してご連絡させていただきます。</div>
+
+      <div class="qr-row">
+        <div class="qr-cap">スマホ・パソコンからお申し込みできます<br>アフターメンテナンスQRコードはこちら →<br><span class="qr-url">申込URL→ https://www.lime-h.co.jp/owners/</span></div>
+        <img src="${QR}" alt="QR">
+      </div>
+
+      <div class="notice">尚、大変申し訳ございませんが下記記載の日程は定休日とイベントの都合でご予約、点検は承れませんのでご了承ください。</div>
+
+      <div class="schedule">定休日：${holiday}
+${event}</div>
+
+      <div class="req">点検のご予約は、${reqMonth}中にいただけると幸いです。</div>
+      <div class="req-note">今回は都合が悪いということであれば別日程でも構いませんので、その際は改めて点検予約のご連絡をいただければと存じます。なお、前日等などにご予約いただいた場合、ご希望の日程に添えない場合もございますのでご了承ください</div>
+      <div class="closing">どうぞよろしくお願いいたします。</div>
+
+      <div class="company">
+        〒049-0111　北斗市七重浜８丁目９番１２号<br>
+        <span class="cname">LIME HOUSE　辻木材株式会社</span>　営業時間 ９：００〜１８：００<br>
+        フリーダイヤル ０１２０-３６-１３７０ ／ TEL ０１３８-４９-６０３０<br>
+        担当 メンテナンスサポート課<br>
+        メール lime-maintenance@lime-h.co.jp
+      </div>
+    </div>`;
+  }
+
+  function render() {
+    const map = [
+      {id:'c1', y:1},
+      {id:'c2', y:2},
+      {id:'c5', y:5},
+      {id:'c10', y:10},
+    ];
+    let html = '';
+    map.forEach(m => {
+      const n = parseInt(document.getElementById(m.id).value) || 0;
+      for (let i=0; i<n; i++) html += makeHagaki(m.y);
+    });
+    if (!html) html = '<p style="text-align:center;color:#999;padding:40px;">枚数を入力して「プレビュー更新」を押してください。</p>';
+    document.getElementById('sheets').innerHTML = html;
+  }
+
+  render();
+</script>
+</body>
+</html>
